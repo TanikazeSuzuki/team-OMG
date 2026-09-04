@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}通知一覧 | EventMatch{% endblock %}
+
+{% block content %}
+
+<section class="notification-page">
+
+    <div class="page-header">
+        <h1>通知一覧</h1>
+        {% if unread_count %}
+            <p>未読の通知が {{ unread_count }} 件あります。</p>
+        {% else %}
+            <p>未読の通知はありません。</p>
+        {% endif %}
+    </div>
+
+    <!-- 一括既読ボタン -->
+    {% if unread_count %}
+        <div class="notification-actions">
+            <form method="post" action="{% url 'notifications:notification_mark_all_read' %}">
+                {% csrf_token %}
+                <button type="submit" class="button">すべて既読にする</button>
+            </form>
+        </div>
+    {% endif %}
+
+    <!-- 通知リスト -->
+    <div class="notification-list">
+        {% for notification in notifications %}
+            <article class="notification-item {% if not notification.is_read %}unread{% endif %}">
+                <div class="notification-content">
+                    <h2 class="notification-event-title">{{ notification.event.title }}</h2>
+                    <p class="notification-message">{{ notification.message }}</p>
+                    <small class="notification-date">{{ notification.created_at }}</small>
+                    <a
+                        class="notification-event-link"
+                        href="{% url 'events:event_detail' notification.event.pk %}"
+                    >イベント詳細を見る</a>
+                </div>
+
+                <!-- 個別既読ボタン（未読の場合のみ表示） -->
+                {% if not notification.is_read %}
+                    <form class="notification-read-form" method="post" action="{% url 'notifications:notification_mark_read' notification.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="button button-small">既読にする</button>
+                    </form>
+                {% endif %}
+            </article>
+        {% empty %}
+            <p class="empty-state">通知はありません。</p>
+        {% endfor %}
+    </div>
+
+</section>
+
+{% endblock %}

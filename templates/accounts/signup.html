@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}アカウント作成 | EventMatch{% endblock %}
+
+{% block content %}
+
+<section class="form-page">
+
+    <div class="form-card">
+
+        <h1>アカウント作成</h1>
+
+        <p class="form-description">
+            必要な情報を入力してください。
+        </p>
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="form-error">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+
+            {% for field in form %}
+
+                <div class="form-group">
+
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <small class="help-text">
+                            {{ field.help_text }}
+                        </small>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <div class="field-error">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+
+            <button type="submit" class="button button-primary">
+                アカウントを作成
+            </button>
+
+        </form>
+
+
+        <div class="form-footer">
+
+            <p>
+                すでにアカウントをお持ちですか？
+            </p>
+
+            <a href="{% url 'accounts:login' %}" class="text-link">
+                ログインする
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

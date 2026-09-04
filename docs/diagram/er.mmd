@@ -1,0 +1,154 @@
+%% ER図: Team-D プロジェクト（accounts / events / interactions / search / notifications）
+%% 命名規則についての注記:
+%% - エンティティ名は Django の実テーブル名（例: accounts_user, events_event）ではなく、
+%%   モデル名由来の snake_case 論理名（user, event, event_tag, ...）を使用する。
+%% - user エンティティは accounts.User（django.contrib.auth.models.AbstractUser を継承）。
+%%   AbstractUser 由来のフィールド（password, last_login, is_superuser, first_name,
+%%   last_name, is_staff, is_active, date_joined）も含めている。
+%%   ただし AbstractUser 標準の groups / user_permissions への ManyToMany は
+%%   Django 認証フレームワークの標準機能であり本アプリ固有のリレーションではないため、
+%%   エンティティ・リレーションとしては表現していない（user エンティティ内の注記のみ）。
+%%   なお username フィールドは None 化されて未使用（USERNAME_FIELD = "email"）。
+%% - event.tags (Event <-> Tag) は through="EventTag" を指定した明示的な中間テーブル。
+%% - saved_search.tags (SavedSearch <-> Tag) は素の ManyToManyField で、Django が
+%%   自動生成する中間テーブル（search_savedsearch_tags）は本図では省略する。
+
+erDiagram
+    user ||--|| user_preference : "1人のuserは1件のuser_preferenceを持つ"
+    user ||--o{ event : "organizerとしてイベントを作成する"
+    event ||--o{ event_tag : "タグ付けされる"
+    tag ||--o{ event_tag : "イベントに付与される"
+    user ||--o{ favorite : "お気に入り登録する"
+    event ||--o{ favorite : "お気に入りされる"
+    user ||--o{ like : "いいねする"
+    event ||--o{ like : "いいねされる"
+    user ||--o{ event_view : "閲覧する"
+    event ||--o{ event_view : "閲覧される"
+    user ||--o{ rating : "評価・レビューする"
+    event ||--o{ rating : "評価・レビューされる"
+    user ||--o{ saved_search : "ownerとして保存検索を持つ"
+    saved_search }o--o{ tag : "検索条件としてタグを指定する(M2M)"
+    user ||--o{ notification : "通知を受け取る"
+    event ||--o{ notification : "一致したイベントとして参照される"
+    saved_search ||--o{ notification : "一致条件として参照される"
+
+    user {
+        bigint id PK
+        string password
+        datetime last_login "null許可"
+        boolean is_superuser
+        string first_name "未使用"
+        string last_name "未使用"
+        boolean is_staff
+        boolean is_active
+        datetime date_joined
+        string email UK "USERNAME_FIELD, 保存時に正規化・小文字化"
+        string name "表示名"
+        string role "choices: participant/organizer (User.Role)"
+    }
+
+    user_preference {
+        bigint id PK
+        bigint user_id FK,UK "OneToOneField(User, related_name=preference)"
+        string desired_location "希望地域, blank許可"
+        boolean notifications_enabled "デフォルトTrue"
+        string theme_color "choices: system/light/dark (UserPreference.Theme)"
+        datetime created_at
+        datetime updated_at
+    }
+
+    event {
+        bigint id PK
+        string title
+        text description "blank許可"
+        bigint organizer_id FK "settings.AUTH_USER_MODEL, on_delete=CASCADE"
+        datetime start_datetime
+        datetime end_datetime "clean()でstart_datetimeより後を検証"
+        string location "blank許可"
+        string official_url "URLField, blank許可"
+        int min_age "null許可, clean()でmax_age以下を検証"
+        int max_age "null許可"
+        string image "ImageField, upload_to=event_images/, null/blank許可"
+        string status "choices: draft/publish/cancel (Event.Status), default=draft"
+        datetime created_at
+        datetime updated_at
+    }
+
+    tag {
+        bigint id PK
+        string name UK "max_length=50"
+    }
+
+    event_tag {
+        bigint id PK
+        bigint event_id FK
+        bigint tag_id FK
+        %% UniqueConstraint(fields=[event, tag], name=unique_event_tag)
+    }
+
+    favorite {
+        bigint id PK
+        bigint event_id FK
+        bigint user_id FK
+        datetime created_at
+        %% UniqueConstraint(fields=[event, user], name=unique_favorite)
+    }
+
+    like {
+        bigint id PK
+        bigint event_id FK
+        bigint user_id FK
+        datetime created_at
+        %% UniqueConstraint(fields=[event, user], name=unique_like)
+    }
+
+    event_view {
+        bigint id PK
+        bigint event_id FK
+        bigint user_id FK
+        datetime viewed_at
+        %% 複合ユニーク制約なし。同一user/eventで複数回記録可能。
+    }
+
+    rating {
+        bigint id PK
+        bigint event_id FK
+        bigint user_id FK
+        smallint rating "PositiveSmallIntegerField, validators: MinValue(0)/MaxValue(5)"
+        text comment "null/blank許可"
+        datetime created_at
+        datetime updated_at
+        %% UniqueConstraint(fields=[event, user], name=unique_review)
+        %% clean(): event.is_finished が真のときのみ投稿可
+    }
+
+    saved_search {
+        bigint id PK
+        bigint owner_id FK "settings.AUTH_USER_MODEL, on_delete=CASCADE"
+        string source "choices: manual/preference (SavedSearch.Source), default=manual"
+        string keyword "blank許可"
+        string location "blank許可"
+        date period_from "null許可"
+        date period_to "null許可, clean()でperiod_from以降を検証"
+        int age_min "null許可, 検索(SearchService)には未使用。通知の一致判定(MatchService)には使用"
+        int age_max "null許可, clean()でage_min以上を検証"
+        string priority "MVP未使用のフリーテキスト項目, blank許可"
+        boolean notify_enabled "デフォルトTrue"
+        datetime created_at
+        datetime updated_at
+        %% UniqueConstraint(fields=[owner], condition=Q(source="preference"),
+        %%   name=unique_preference_search_per_user)
+        %% -> 1ユーザーにつき source=preference の保存検索は最大1件
+    }
+
+    notification {
+        bigint id PK
+        bigint user_id FK "通知の宛先"
+        bigint event_id FK "一致したイベント"
+        bigint saved_search_id FK "一致条件となった保存検索"
+        string notification_type "choices: match (Notification.NotificationType), default=match"
+        string message "max_length=255"
+        boolean is_read "デフォルトFalse"
+        datetime created_at
+        %% UniqueConstraint(fields=[user, event, saved_search], name=uniq_match_notification)
+    }

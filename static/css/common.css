@@ -1,0 +1,989 @@
+/* 基本・変数設定*/
+:root {
+    --primary-color: #0666eb;
+    --primary-hover: #0052c2;
+    --danger-color: #dc3545;
+    --danger-hover: #bb2d3b;
+    --bg-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --border-color: #e9ecef;
+    --text-color: #212529;
+    --text-muted: #6c757d;
+    --highlight-color: #eef4ff;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/*　ヘッダー (共通)*/
+.site-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-decoration: none !important;
+}
+
+.main-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.main-nav a {
+    color: #495057;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.main-nav a:hover {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.main-nav .settings-button {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    background: var(--highlight-color);
+    color: var(--primary-color);
+    overflow: hidden;
+}
+
+.main-nav .settings-button:hover,
+.main-nav .settings-button:focus-visible {
+    border-color: var(--primary-color);
+    background: #e3efff;
+    color: var(--primary-hover);
+}
+
+.main-nav .settings-button:focus-visible {
+    outline: 3px solid rgba(6, 102, 235, 0.2);
+    outline-offset: 2px;
+}
+
+.settings-icon-image {
+    width: 38px;
+    height: 38px;
+    object-fit: cover;
+    object-position: center;
+    mix-blend-mode: multiply;
+}
+
+.settings-label {
+    display: none;
+}
+
+.user-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.user-avatar-sm {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #adb5bd;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+/* レイアウト (サイドバー付き 2カラム)*/
+.main-content {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 24px;
+}
+
+.layout-with-sidebar {
+    display: flex;
+    gap: 30px;
+}
+
+.sidebar-nav {
+    width: 220px;
+    flex-shrink: 0;
+    background: #fff;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    height: fit-content;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    color: #495057;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    margin-bottom: 4px;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+    background-color: var(--highlight-color);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.content-area {
+    flex: 1;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 30px;
+    box-shadow: var(--shadow-sm);
+}
+
+/*フォーム＆カードUI (ログイン・登録・退会・プロフィール) */
+.form-card-center,
+.form-card {
+    max-width: 440px;
+    margin: 40px auto;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 35px 30px;
+    box-shadow: var(--shadow-sm);
+}
+
+.form-card-center h1,
+.form-card h1,
+.content-area h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #343a40;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(6, 102, 235, 0.15);
+}
+
+/* ボタン */
+.btn,
+.button {
+    display: inline-block;
+    width: 100%;
+    padding: 11px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-primary,
+.button-primary {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.btn-primary:hover,
+.button-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn-danger,
+.button-danger {
+    background-color: var(--danger-color);
+    color: #fff;
+}
+
+.btn-danger:hover,
+.button-danger:hover {
+    background-color: var(--danger-hover);
+}
+
+.btn-secondary,
+.button-secondary {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.btn-secondary:hover,
+.button-secondary:hover {
+    background-color: #dee2e6;
+}
+
+.btn-group,
+.form-actions,
+.management-actions {
+    display: flex;
+    gap: 12px;
+}
+
+/* プロフィールヘッダー  */
+.profile-header-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 25px;
+}
+
+.profile-avatar-lg {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: #e8f1ff;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.profile-info h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.profile-info p {
+    margin: 2px 0 0;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+/* 設定画面のトグルスイッチ */
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+}
+
+.setting-label-title {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.setting-label-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: .3s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+/* 警告ボックス（退会画面） */
+.alert-danger-box {
+    background-color: #f8d7da;
+    border: 1px solid #f5c2c7;
+    border-radius: var(--radius-sm);
+    color: #842029;
+    padding: 14px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* その他メニュー (カード型リンク) */
+.other-menu-list {
+    margin-top: 30px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 20px;
+}
+
+.other-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    margin-bottom: 10px;
+    color: var(--text-color);
+    text-decoration: none !important;
+}
+
+.other-menu-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* HTMLテンプレートで使用している共通クラス */
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+.form-page,
+.confirm-page,
+.settings-page,
+.account-page,
+.notification-page,
+.organizer-page,
+.page-container {
+    width: 100%;
+    max-width: 920px;
+    margin: 0 auto;
+}
+
+.form-description,
+.help-text,
+.form-footer,
+.notification-date {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.form-footer {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.form-footer p {
+    margin: 0 0 8px;
+}
+
+.text-link {
+    font-weight: 600;
+    text-underline-offset: 3px;
+}
+
+.form-error,
+.field-error,
+.error-list,
+.messages {
+    margin-bottom: 18px;
+}
+
+.form-error,
+.field-error,
+.message-error,
+.error-list {
+    padding: 10px 12px;
+    border: 1px solid #f1b8bd;
+    border-radius: var(--radius-sm);
+    background: #fff5f6;
+    color: #9c2f3b;
+    font-size: 13px;
+}
+
+.form-error ul,
+.field-error ul,
+.error-list {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 20px;
+}
+
+.message {
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    box-shadow: var(--shadow-sm);
+}
+
+.message-success {
+    border-color: #a9c9f5;
+    background: #f0f6ff;
+    color: #064ca7;
+}
+
+.page-header {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.page-header h1 {
+    margin: 0 0 8px;
+    font-size: 26px;
+}
+
+.page-header p {
+    margin: 0;
+    color: var(--text-muted);
+}
+
+.account-card,
+.settings-card,
+.confirm-card,
+.management-card,
+.notification-item {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--card-bg);
+    box-shadow: var(--shadow-sm);
+}
+
+.account-card {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    padding: 24px;
+    margin-bottom: 22px;
+}
+
+.profile-icon {
+    display: grid;
+    width: 64px;
+    height: 64px;
+    flex: 0 0 64px;
+    place-items: center;
+    border-radius: 50%;
+    background: #e8f1ff;
+    color: var(--primary-color);
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.account-info h2,
+.account-info p {
+    margin: 0;
+}
+
+.account-info p {
+    color: var(--text-muted);
+}
+
+.profile-form-container,
+.settings-card,
+.confirm-card {
+    padding: 28px;
+}
+
+.account-menu {
+    display: grid;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.menu-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    color: var(--text-color);
+}
+
+.menu-item-danger {
+    color: var(--danger-color);
+}
+
+.setting-item,
+.notification-item {
+    padding: 18px;
+}
+
+.setting-item + .setting-item {
+    border-top: 1px solid var(--border-color);
+}
+
+.saved-notification-settings {
+    margin-top: 18px;
+}
+
+.saved-notification-header,
+.notification-rule {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.saved-notification-header {
+    padding-bottom: 16px;
+}
+
+.saved-notification-header h2,
+.notification-rule h3,
+.notification-rule p {
+    margin: 0;
+}
+
+.notification-rule-count {
+    flex: 0 0 auto;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--highlight-color);
+    color: var(--primary-color);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.notification-rule {
+    padding: 16px 0;
+    border-top: 1px solid var(--border-color);
+}
+
+.notification-rule p {
+    margin-top: 5px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.notification-rule .button {
+    width: auto;
+    flex: 0 0 auto;
+}
+
+.notification-rule-note {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    background: #fff7e6;
+    color: #765000;
+    font-size: 13px;
+}
+
+.notification-rule-empty {
+    margin: 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.preference-tag-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.preference-tag-option {
+    cursor: pointer;
+}
+
+.preference-tag-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.preference-tag-option span {
+    display: inline-flex;
+    min-height: 36px;
+    padding: 7px 12px;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--text-color);
+    font-size: 13px;
+}
+
+.preference-tag-option input:checked + span {
+    border-color: var(--primary-color);
+    background: var(--highlight-color);
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.preference-tag-option input:focus-visible + span {
+    outline: 3px solid rgba(6, 102, 235, 0.25);
+    outline-offset: 2px;
+}
+
+.warning-text,
+.delete-event-info {
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    background: #fff4f4;
+    color: #842029;
+}
+
+.event-management-list,
+.notification-list {
+    display: grid;
+    gap: 16px;
+}
+
+.management-card {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    overflow: hidden;
+}
+
+.event-image {
+    min-height: 150px;
+    background: #e9ecef;
+}
+
+.event-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.management-card-content,
+.notification-content {
+    padding: 20px;
+}
+
+.event-info h2,
+.notification-message {
+    margin-top: 0;
+}
+
+.management-actions,
+.form-actions,
+.notification-actions {
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+
+.management-actions .button,
+.form-actions .button,
+.notification-actions .button,
+.button-small {
+    width: auto;
+}
+
+.button-small {
+    padding: 7px 12px;
+    font-size: 12px;
+}
+
+.notification-item.unread {
+    border-left: 4px solid var(--primary-color);
+    background: var(--highlight-color);
+}
+
+.notification-item {
+    background: var(--highlight-color);
+}
+
+.notification-link {
+    position: relative;
+}
+
+.notification-badge {
+    display: inline-flex;
+    min-width: 20px;
+    height: 20px;
+    margin-left: 4px;
+    padding: 0 6px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--danger-color);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.notification-event-link {
+    display: inline-block;
+    margin-top: 10px;
+    font-weight: 600;
+}
+
+.notification-read-form {
+    margin-top: 12px;
+    padding: 0 20px 20px;
+}
+
+.empty-state {
+    padding: 36px 24px;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    background: #fff;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.logout-form {
+    margin: 0;
+}
+
+.logout-form button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #495057;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.logout-form button:hover {
+    color: var(--primary-color);
+}
+
+.menu-button {
+    display: none;
+}
+
+.site-footer {
+    margin-top: 48px;
+    border-top: 1px solid var(--border-color);
+    background: #fff;
+}
+
+.footer-inner {
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.footer-inner p {
+    margin: 0;
+}
+
+/*レスポンシブ*/
+@media (max-width: 768px) {
+    .layout-with-sidebar {
+        flex-direction: column;
+    }
+    .sidebar-nav {
+        width: 100%;
+    }
+
+    .header-inner,
+    .main-nav,
+    .page-header,
+    .footer-inner {
+        flex-wrap: wrap;
+    }
+
+    .main-nav {
+        gap: 12px;
+    }
+
+    .site-header.navigation-ready .logo {
+        order: 1;
+    }
+
+    .site-header.navigation-ready .menu-button {
+        display: inline-flex;
+        order: 2;
+        width: 42px;
+        height: 42px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        background: #fff;
+        color: var(--text-color);
+        cursor: pointer;
+        font-size: 22px;
+    }
+
+    .site-header.navigation-ready .main-nav {
+        display: none;
+        order: 3;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+        padding-top: 10px;
+    }
+
+    .site-header.navigation-ready .main-nav.is-open {
+        display: flex;
+    }
+
+    .site-header.navigation-ready .main-nav a,
+    .site-header.navigation-ready .logout-form button {
+        display: block;
+        width: 100%;
+        padding: 10px 12px;
+        text-align: left;
+    }
+
+    .site-header.navigation-ready .main-nav .settings-button {
+        display: flex;
+        width: 100%;
+        height: auto;
+        min-height: 42px;
+        flex: none;
+        gap: 10px;
+        justify-content: flex-start;
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        overflow: visible;
+    }
+
+    .site-header.navigation-ready .settings-label {
+        display: inline;
+    }
+
+    .management-card {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-form-container,
+    .settings-card,
+    .confirm-card,
+    .form-card {
+        padding: 22px;
+    }
+
+    .notification-rule {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .notification-rule .button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 520px) {
+    .main-content,
+    .header-inner,
+    .footer-inner {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .main-nav {
+        width: 100%;
+    }
+
+    .account-card,
+    .page-header,
+    .footer-inner {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .button,
+    .management-actions .button,
+    .form-actions .button {
+        width: 100%;
+    }
+}

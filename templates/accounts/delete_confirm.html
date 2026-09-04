@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}退会確認 | EventMatch{% endblock %}
+
+{% block content %}
+
+<section class="confirm-page">
+
+    <div class="confirm-card">
+
+        <h1>アカウントを退会しますか？</h1>
+
+        <p>
+            退会すると、アカウントに関連する情報が利用できなくなる場合があります。
+        </p>
+
+        <p class="warning-text">
+            この操作は取り消せない場合があります。
+        </p>
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="error-list">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+
+                <button
+                    type="submit"
+                    class="button button-danger"
+                >
+                    退会する
+                </button>
+
+                <a href="{% url 'accounts:profile' %}" class="button button-secondary">
+                    キャンセル
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</section>
+
+{% endblock %}

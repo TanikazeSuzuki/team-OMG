@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}アカウント | EventMatch{% endblock %}
+
+{% block content %}
+
+<section class="account-page">
+
+    <div class="page-header">
+
+        <h1>アカウント</h1>
+
+        <p>
+            アカウント情報を確認できます。
+        </p>
+
+    </div>
+
+
+    <div class="account-card">
+
+        <div class="profile-icon">
+            {{ user.name|first|upper }}
+        </div>
+
+        <div class="account-info">
+
+            <h2>
+                {{ user.name }}
+            </h2>
+
+            {% if user.email %}
+                <p>
+                    {{ user.email }}
+                </p>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <div class="profile-form-container">
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                {{ form.non_field_errors }}
+            {% endif %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="button button-primary">
+                変更を保存
+            </button>
+        </form>
+
+    </div>
+
+
+    <div class="account-menu">
+
+        <a href="{% url 'accounts:preferences' %}" class="menu-item">
+            <span>
+                設定
+            </span>
+            <span>›</span>
+        </a>
+
+        <a href="{% url 'accounts:delete' %}" class="menu-item menu-item-danger">
+            <span>
+                アカウントを退会する
+            </span>
+            <span>›</span>
+        </a>
+
+    </div>
+
+</section>
+
+{% endblock %}

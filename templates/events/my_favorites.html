@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}お気に入り | EventMatch{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/participant.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="participant-page page-section">
+  <div class="page-title-row">
+    <div>
+      <p class="eyebrow">MY FAVORITES</p>
+      <h1>お気に入り</h1>
+      <p>あとで見たいイベントをまとめています。</p>
+    </div>
+    <a class="button button-secondary" href="{% url 'search:search_results' %}">イベントを探す</a>
+  </div>
+
+  {% if events %}
+    <div class="event-grid">
+      {% for event in events %}
+        {% include "events/_event_card.html" with event=event %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h2>お気に入りはまだありません</h2>
+      <p>気になるイベントの詳細画面から追加できます。</p>
+      <a class="button button-primary" href="{% url 'search:search_results' %}">イベント一覧を見る</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

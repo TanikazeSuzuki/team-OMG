@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}閲覧履歴 | EventMatch{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/participant.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="participant-page page-section">
+  <div class="page-title-row">
+    <div>
+      <p class="eyebrow">HISTORY</p>
+      <h1>閲覧履歴</h1>
+      <p>最近確認したイベントを新しい順に表示します。</p>
+    </div>
+  </div>
+
+  {% if views %}
+    <div class="history-list">
+      {% for view in views %}
+        <div class="history-item">
+          <time datetime="{{ view.viewed_at|date:'c' }}">{{ view.viewed_at|date:"Y年n月j日 H:i" }}</time>
+          {% include "events/_event_card.html" with event=view.event %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h2>閲覧履歴はまだありません</h2>
+      <p>イベント詳細を見ると、ここからもう一度確認できます。</p>
+      <a class="button button-primary" href="{% url 'search:search_results' %}">イベント一覧を見る</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

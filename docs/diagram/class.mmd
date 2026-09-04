@@ -1,0 +1,287 @@
+%% クラス図: Team-D プロジェクト（実装ベース、2026-08時点）
+%%
+%% 旧版にあった Admin / Search / SaveSearch / View / Like.countLikes() 等、
+%% 実装に存在しない設計初期の空想クラス・メソッドは削除した。
+%% 以下はモデル層の主要フィールド・メソッド・内部choicesクラスと、
+%% サービス層・フォーム層の主要メソッドを実装（*/models.py, */services.py,
+%% accounts/forms.py）に基づいて反映したもの。
+%% 引数は簡略化している箇所がある（実装の完全な引数リストではない）。
+%% AuthenticationForm / UserCreationForm / ModelForm / Form は Django標準クラス
+%% （django.contrib.auth.forms / django.forms）であり、本プロジェクト固有の実装ではない。
+
+classDiagram
+
+    %% ==================== accounts ====================
+    class User {
+        +string email
+        +string name
+        +string role
+        +save()
+        +bool is_organizer
+    }
+    class User_Role {
+        <<enumeration>>
+        PARTICIPANT
+        ORGANIZER
+    }
+    User *-- User_Role
+
+    class UserManager {
+        +create_user(email, password, extra_fields) User
+        +create_superuser(email, password, extra_fields) User
+    }
+    UserManager --> User : creates
+    User --> UserManager : objects
+
+    class UserPreference {
+        +string desired_location
+        +boolean notifications_enabled
+        +string theme_color
+    }
+    class UserPreference_Theme {
+        <<enumeration>>
+        SYSTEM
+        LIGHT
+        DARK
+    }
+    UserPreference *-- UserPreference_Theme
+    User "1" --> "1" UserPreference : preference
+
+    class AccountService {
+        <<service>>
+        +create_account(email, password, name, role)$ User
+        +delete_account(user)$
+    }
+    AccountService ..> User : uses
+    AccountService ..> UserPreference : uses
+
+    %% ---- forms (accounts/forms.py) ----
+    class AuthenticationForm {
+        <<django>>
+    }
+    class UserCreationForm {
+        <<django>>
+    }
+    class ModelForm {
+        <<django>>
+    }
+    class Form {
+        <<django>>
+    }
+
+    class EmailAuthenticationForm {
+        +EmailField username
+        +CharField password
+    }
+    AuthenticationForm <|-- EmailAuthenticationForm
+
+    class RegistrationForm {
+        +clean_email() str
+    }
+    UserCreationForm <|-- RegistrationForm
+    RegistrationForm ..> User
+
+    class ProfileForm {
+        +clean_email() str
+    }
+    ModelForm <|-- ProfileForm
+    ProfileForm ..> User
+
+    class UserPreferenceForm {
+        +ModelMultipleChoiceField notification_tags
+        +__init__(args, kwargs)
+        +save(commit) UserPreference
+    }
+    ModelForm <|-- UserPreferenceForm
+    UserPreferenceForm ..> UserPreference
+    UserPreferenceForm ..> Tag
+    UserPreferenceForm ..> SavedSearchService : sync_notification_preference
+    UserPreferenceForm ..> EventMatchNotifier : notify_for_saved_search
+
+    class AccountDeletionForm {
+        +CharField password
+        +BooleanField confirmation
+        +__init__(args, user, kwargs)
+        +clean_password() str
+    }
+    Form <|-- AccountDeletionForm
+    AccountDeletionForm ..> User
+
+    %% ==================== events ====================
+    class Tag {
+        +string name
+    }
+
+    class Event {
+        +string title
+        +text description
+        +datetime start_datetime
+        +datetime end_datetime
+        +string location
+        +string official_url
+        +int min_age
+        +int max_age
+        +image image
+        +string status
+        +clean()
+        +bool is_finished
+    }
+    class Event_Status {
+        <<enumeration>>
+        DRAFT
+        PUBLISH
+        CANCEL
+    }
+    Event *-- Event_Status
+    User "1" --> "*" Event : organizer
+
+    class EventTag {
+    }
+    Event "1" --> "*" EventTag
+    Tag "1" --> "*" EventTag
+    Event "*" --> "*" Tag : tags (through EventTag)
+
+    class EventService {
+        <<service>>
+        +get_published_events()$ QuerySet
+        +with_rating_summary(queryset)$ QuerySet
+        +create_event(organizer, fields)$ Event
+        +update_event(event, user, fields)$ Event
+        +delete_event(event, user)$
+    }
+    EventService ..> Event : uses
+
+    %% ==================== interactions ====================
+    class Favorite {
+        +datetime created_at
+    }
+    User "1" --> "*" Favorite
+    Event "1" --> "*" Favorite
+
+    class Like {
+        +datetime created_at
+    }
+    User "1" --> "*" Like
+    Event "1" --> "*" Like
+
+    class EventView {
+        +datetime viewed_at
+    }
+    User "1" --> "*" EventView
+    Event "1" --> "*" EventView
+
+    class Rating {
+        +smallint rating
+        +text comment
+        +clean()
+    }
+    User "1" --> "*" Rating
+    Event "1" --> "*" Rating
+
+    class InteractionService {
+        <<service>>
+        +add_favorite(event, user)$ Favorite
+        +remove_favorite(event, user)$
+        +add_like(event, user)$ Like
+        +remove_like(event, user)$
+        +record_view(event, user)$ EventView
+        +submit_review(event, user, rating, comment)$ Rating
+        +update_review(review, user, rating, comment)$ Rating
+        +delete_review(review, user)$
+        +get_event_stats(event)$ dict
+    }
+    InteractionService ..> Favorite : uses
+    InteractionService ..> Like : uses
+    InteractionService ..> EventView : uses
+    InteractionService ..> Rating : uses
+
+    %% ==================== search ====================
+    class SavedSearch {
+        +string source
+        +string keyword
+        +string location
+        +date period_from
+        +date period_to
+        +int age_min
+        +int age_max
+        +string priority
+        +boolean notify_enabled
+        +clean()
+    }
+    class SavedSearch_Source {
+        <<enumeration>>
+        MANUAL
+        PREFERENCE
+    }
+    SavedSearch *-- SavedSearch_Source
+    User "1" --> "*" SavedSearch : owner
+    SavedSearch "*" --> "*" Tag : tags
+
+    class SearchCriteria {
+        <<dataclass>>
+        +string keyword
+        +string location
+        +date period_from
+        +date period_to
+        +int age_min
+        +int age_max
+        +tag_ids
+    }
+
+    class SearchService {
+        <<service>>
+        +search(criteria)$ QuerySet
+    }
+    SearchService ..> SearchCriteria : uses
+    SearchService ..> Event : queries
+
+    class SavedSearchService {
+        <<service>>
+        +create(owner, tag_ids, fields)$ SavedSearch
+        +update(saved_search, user, tag_ids, fields)$ SavedSearch
+        +delete(saved_search, user)$
+        +get_notification_preference(owner)$ SavedSearch
+        +sync_notification_preference(owner, location, tag_ids, notify_enabled)$ SavedSearch
+    }
+    SavedSearchService ..> SavedSearch : uses
+
+    class MatchService {
+        <<service>>
+        +matches(saved_search, event)$ bool
+    }
+    MatchService ..> SavedSearch : uses
+    MatchService ..> Event : uses
+
+    %% ==================== notifications ====================
+    class Notification {
+        +string notification_type
+        +string message
+        +boolean is_read
+    }
+    class Notification_NotificationType {
+        <<enumeration>>
+        MATCH
+    }
+    Notification *-- Notification_NotificationType
+    User "1" --> "*" Notification
+    Event "1" --> "*" Notification
+    SavedSearch "1" --> "*" Notification
+
+    class NotificationService {
+        <<service>>
+        +create_notification(user, event, saved_search, message, notification_type)$ Notification
+        +mark_as_read(notification, user)$ Notification
+        +mark_all_as_read(user)$ int
+        +get_notifications(user)$ QuerySet
+        +unread_count(user)$ int
+    }
+    NotificationService ..> Notification : uses
+
+    class EventMatchNotifier {
+        <<service>>
+        +notify_for_event(event)$ list
+        +notify_for_saved_search(saved_search)$ list
+    }
+    EventMatchNotifier ..> Notification : creates
+    EventMatchNotifier ..> SavedSearch : reads
+    EventMatchNotifier --> MatchService : uses

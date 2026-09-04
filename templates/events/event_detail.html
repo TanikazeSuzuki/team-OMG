@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ event.title }} | EventMatch{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/participant.css' %}">
+{% endblock %}
+
+{% block content %}
+<article class="participant-page event-detail">
+  <a class="back-link" href="{{ next_url }}">← {{ back_label }}</a>
+
+  <header class="event-detail-header">
+    <div class="event-detail-image">
+      {% if event.image %}
+        <img src="{{ event.image.url }}" alt="{{ event.title }}">
+      {% else %}
+        <span class="image-placeholder" aria-hidden="true">EVENT</span>
+      {% endif %}
+    </div>
+    <div class="event-detail-intro">
+      <div class="tag-list">
+        {% for tag in event.tags.all %}
+          <span class="tag">{{ tag.name }}</span>
+        {% empty %}
+          <span class="tag tag-muted">タグなし</span>
+        {% endfor %}
+      </div>
+      <h1>{{ event.title }}</h1>
+      <p class="organizer">主催：{{ event.organizer.name|default:event.organizer.email }}</p>
+      <dl class="detail-meta">
+        <div>
+          <dt>開催日時</dt>
+          <dd>{{ event.start_datetime|date:"Y年n月j日 H:i" }}〜{{ event.end_datetime|date:"Y年n月j日 H:i" }}</dd>
+        </div>
+        <div>
+          <dt>開催地</dt>
+          <dd>{{ event.location|default:"未定" }}</dd>
+        </div>
+        {% if event.official_url %}
+          <div>
+            <dt>公式サイト</dt>
+            <dd>
+              <a class="text-link" href="{{ event.official_url }}" target="_blank" rel="noopener noreferrer">
+                公式ページを開く
+              </a>
+            </dd>
+          </div>
+        {% endif %}
+        <div>
+          <dt>対象年齢</dt>
+          <dd>
+            {% if event.min_age is not None or event.max_age is not None %}
+              {{ event.min_age|default:"0" }}歳〜{{ event.max_age|default:"上限なし" }}
+            {% else %}
+              年齢制限なし
+            {% endif %}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </header>
+
+  <section class="detail-section">
+    <h2>イベントについて</h2>
+    <div class="event-description">{{ event.description|default:"イベントの説明はありません。"|linebreaks }}</div>
+  </section>
+
+  <section class="detail-section" aria-labelledby="reaction-heading">
+    <h2 id="reaction-heading">みんなの反応</h2>
+    <div class="stats-grid">
+      <div><strong>{{ stats.average_rating|floatformat:1 }}</strong><span>平均評価 / 5</span></div>
+      <div><strong>{{ stats.review_count }}</strong><span>評価・レビュー</span></div>
+      <div><strong>{{ stats.favorite_count }}</strong><span>お気に入り</span></div>
+      <div><strong>{{ stats.like_count }}</strong><span>いいね</span></div>
+    </div>
+
+    {% if user.is_authenticated %}
+      <div class="action-row">
+        <form method="post" action="{% url 'interactions:toggle_favorite' event.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ next_url }}">
+          <button class="button {% if is_favorited %}button-active{% else %}button-secondary{% endif %}" type="submit">
+            {% if is_favorited %}お気に入り解除{% else %}お気に入りに追加{% endif %}
+          </button>
+        </form>
+        <form method="post" action="{% url 'interactions:toggle_like' event.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ next_url }}">
+          <button class="button {% if is_liked %}button-active{% else %}button-secondary{% endif %}" type="submit">
+            {% if is_liked %}いいねを取り消す{% else %}いいね{% endif %}
+          </button>
+        </form>
+      </div>
+    {% else %}
+      <p class="notice-card"><a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">ログイン</a>すると、お気に入り・いいね・評価を利用できます。</p>
+    {% endif %}
+  </section>
+
+  <section class="detail-section" id="reviews" aria-labelledby="rating-heading">
+    <h2 id="rating-heading">評価・レビュー</h2>
+
+    {% if user.is_authenticated %}
+      {% if event.is_finished %}
+        {% if user_rating %}
+          <form class="review-form" method="post" action="{% url 'interactions:update_rating' event.pk user_rating.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next_url }}">
+            <h3>自分の評価を編集</h3>
+            <div class="field-group">
+              <label for="my-rating">評価（0〜5）</label>
+              <select id="my-rating" name="rating" required>
+                {% for score in rating_choices %}
+                  <option value="{{ score }}" {% if user_rating.rating == score %}selected{% endif %}>{{ score }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="my-comment">レビュー</label>
+              <textarea id="my-comment" name="comment" rows="5" maxlength="1000">{{ user_rating.comment|default:"" }}</textarea>
+            </div>
+            <button class="button button-primary" type="submit">評価を更新</button>
+          </form>
+          <form class="delete-form" method="post" action="{% url 'interactions:delete_rating' event.pk user_rating.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next_url }}">
+            <button class="button button-danger" type="submit">自分の評価を削除</button>
+          </form>
+        {% else %}
+          <form class="review-form" method="post" action="{% url 'interactions:submit_review' event.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next_url }}">
+            <h3>評価を投稿</h3>
+            <div class="field-group">
+              <label for="new-rating">評価（0〜5）</label>
+              <select id="new-rating" name="rating" required>
+                {% for score in rating_choices %}
+                  <option value="{{ score }}">{{ score }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="new-comment">レビュー</label>
+              <textarea id="new-comment" name="comment" rows="5" maxlength="1000" placeholder="イベントの感想を書いてください"></textarea>
+            </div>
+            <button class="button button-primary" type="submit">評価を投稿</button>
+          </form>
+        {% endif %}
+      {% else %}
+        <p class="notice-card">評価・レビューはイベント終了後に投稿できます。</p>
+      {% endif %}
+    {% endif %}
+
+    <div class="review-list">
+      {% for rating in ratings %}
+        <article class="review-card">
+          <div class="review-card-header">
+            <strong>{{ rating.user.name|default:rating.user.email }}</strong>
+            <span class="rating-badge">評価 {{ rating.rating }} / 5</span>
+          </div>
+          <p>{{ rating.comment|default:"コメントはありません。"|linebreaksbr }}</p>
+          <time datetime="{{ rating.updated_at|date:'c' }}">{{ rating.updated_at|date:"Y年n月j日" }}</time>
+        </article>
+      {% empty %}
+        <div class="empty-state compact">
+          <p>まだ評価・レビューはありません。</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</article>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}主催イベント | EventMatch{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/participant.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="participant-page page-section organizer-event-page">
+  <div class="page-title-row">
+    <div>
+      <p class="eyebrow">MY EVENTS</p>
+      <h1>主催イベント</h1>
+      <p>このアカウントに割り当てられたイベントと、投稿されたレビューを確認できます。</p>
+    </div>
+  </div>
+
+  {% if events %}
+    <div class="organizer-event-list">
+      {% for event in events %}
+        <article class="organizer-event-card">
+          <div class="organizer-event-image">
+            {% if event.image %}
+              <img src="{{ event.image.url }}" alt="{{ event.title }}">
+            {% else %}
+              <span class="image-placeholder" aria-hidden="true">EVENT</span>
+            {% endif %}
+          </div>
+
+          <div class="organizer-event-content">
+            <div class="organizer-event-heading">
+              <div>
+                <span class="tag">{{ event.get_status_display }}</span>
+                <h2>{{ event.title }}</h2>
+              </div>
+              <div class="organizer-review-summary" aria-label="レビュー集計">
+                <div>
+                  <strong>{{ event.review_count }}</strong>
+                  <span>レビュー</span>
+                </div>
+                <div>
+                  <strong>
+                    {% if event.average_rating is not None %}
+                      {{ event.average_rating|floatformat:1 }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  </strong>
+                  <span>平均評価</span>
+                </div>
+              </div>
+            </div>
+
+            <dl class="event-meta">
+              <div>
+                <dt>開催日時</dt>
+                <dd>{{ event.start_datetime|date:"Y年n月j日 H:i" }}〜{{ event.end_datetime|date:"Y年n月j日 H:i" }}</dd>
+              </div>
+              <div>
+                <dt>開催地</dt>
+                <dd>{{ event.location|default:"未定" }}</dd>
+              </div>
+            </dl>
+
+            <div class="management-actions">
+              <a class="button button-primary" href="{% url 'events:event_detail' event.pk %}#reviews">
+                詳細・レビューを見る
+              </a>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h2>割り当てられたイベントはありません</h2>
+      <p>Django管理画面でイベントの主催者にこのアカウントを設定すると、ここに表示されます。</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

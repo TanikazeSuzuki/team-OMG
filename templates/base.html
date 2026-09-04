@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="EventMatchのイベント検索サイト">
+
+    <title>{% block title %}EventMatch{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- ヘッダー -->
+    <header class="site-header">
+
+        <div class="header-inner">
+
+            <!-- ロゴ -->
+            <a href="{% url 'core:home' %}" class="logo">
+                EventMatch
+            </a>
+
+            <!-- ナビゲーション -->
+            <nav class="main-nav" id="main-navigation" aria-label="メインメニュー">
+
+                {% if user.is_authenticated %}
+
+                    <a href="{% url 'core:home' %}">
+                        ホーム
+                    </a>
+
+                    <a href="{% url 'search:search_results' %}">
+                        イベント検索
+                    </a>
+
+                    <a href="{% url 'notifications:notification_list' %}" class="notification-link">
+                        通知
+                        {% if unread_notification_count %}
+                            <span
+                                class="notification-badge"
+                                aria-label="未読通知{{ unread_notification_count }}件"
+                            >{{ unread_notification_count }}</span>
+                        {% endif %}
+                    </a>
+
+                    {% if user.is_organizer %}
+                        <a href="{% url 'events:my_organized_events' %}">
+                            主催イベント
+                        </a>
+                    {% endif %}
+
+                    <a href="{% url 'events:my_favorites' %}">
+                        お気に入り
+                    </a>
+
+                    <a href="{% url 'accounts:profile' %}">
+                        アカウント
+                    </a>
+
+                    <!-- ログアウト -->
+                    <form method="post"
+                          action="{% url 'accounts:logout' %}"
+                          class="logout-form">
+
+                        {% csrf_token %}
+
+                        <button type="submit">
+                            ログアウト
+                        </button>
+
+                    </form>
+
+                    <a
+                        href="{% url 'accounts:preferences' %}"
+                        class="settings-button"
+                        aria-label="設定"
+                        title="設定"
+                    >
+                        <img
+                            class="settings-icon-image"
+                            src="{% static 'images/settings-gear.jpg' %}"
+                            alt=""
+                            aria-hidden="true"
+                        >
+                        <span class="settings-label">設定</span>
+                    </a>
+
+                {% else %}
+
+                    <a href="{% url 'accounts:login' %}">
+                        ログイン
+                    </a>
+
+                    <a href="{% url 'accounts:signup' %}">
+                        アカウント作成
+                    </a>
+
+                {% endif %}
+
+            </nav>
+
+            <!-- スマートフォン用メニューボタン -->
+            <button
+                class="menu-button"
+                type="button"
+                aria-controls="main-navigation"
+                aria-expanded="false"
+                aria-label="メニューを開く"
+            >
+                <span aria-hidden="true">☰</span>
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- メインコンテンツ -->
+    <main class="main-content">
+
+        <!-- Djangoメッセージ -->
+        {% if messages %}
+
+            <div class="messages">
+
+                {% for message in messages %}
+
+                    <div class="message message-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- 各ページの内容 -->
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+
+    <!-- フッター -->
+    <footer class="site-footer">
+
+        <div class="footer-inner">
+
+            <p>&copy; 2026 EventMatch</p>
+
+        </div>
+
+    </footer>
+
+
+    <!-- JavaScript -->
+    <script src="{% static 'js/common.js' %}"></script>
+
+    {% block extra_js %}
+    {% endblock %}
+
+</body>
+
+</html>

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}設定 | EventMatch{% endblock %}
+
+{% block content %}
+
+<section class="settings-page">
+
+    <div class="page-header">
+
+        <h1>設定</h1>
+
+        <p>
+            開催地とタグ、または検索ページで保存した条件に合う新しいイベントを通知します。
+        </p>
+
+    </div>
+
+
+    <form method="post" class="settings-card">
+
+        {% csrf_token %}
+
+        {% if form %}
+
+            {% for field in form %}
+
+                <div class="setting-item">
+
+                    <div>
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
+
+                        {% if field.help_text %}
+                            <p class="help-text">
+                                {{ field.help_text }}
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    {% if field.name == "notification_tags" %}
+                        <div class="preference-tag-options">
+                            {% for option in field %}
+                                <label class="preference-tag-option">
+                                    {{ option.tag }}
+                                    <span>{{ option.choice_label }}</span>
+                                </label>
+                            {% empty %}
+                                <p class="help-text">選択できるタグはまだありません。</p>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ field }}
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <div class="field-error">{{ field.errors }}</div>
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+
+        <button type="submit" class="button button-primary">
+            設定を保存
+        </button>
+
+    </form>
+
+    <section class="settings-card saved-notification-settings" aria-labelledby="saved-notification-heading">
+        <div class="saved-notification-header">
+            <div>
+                <h2 id="saved-notification-heading">検索ページから追加した通知条件</h2>
+                <p class="help-text">検索条件の保存時に「通知設定に追加する」を選んだものです。</p>
+            </div>
+            <span class="notification-rule-count">{{ notification_searches|length }}件</span>
+        </div>
+
+        {% if not object.notifications_enabled and notification_searches %}
+            <p class="notification-rule-note">「通知を受け取る」がOFFのため、現在これらの条件から通知は届きません。</p>
+        {% endif %}
+
+        {% for saved_search in notification_searches %}
+            <article class="notification-rule">
+                <div>
+                    <h3>{{ saved_search.keyword|default:"キーワード指定なし" }}</h3>
+                    <p>
+                        {% if saved_search.location %}開催地：{{ saved_search.location }}{% else %}開催地指定なし{% endif %}
+                        {% if saved_search.period_from or saved_search.period_to %}
+                            ／期間：{{ saved_search.period_from|date:"Y/m/d"|default:"指定なし" }}〜{{ saved_search.period_to|date:"Y/m/d"|default:"指定なし" }}
+                        {% endif %}
+                    </p>
+                    {% with saved_tags=saved_search.tags.all %}
+                        {% if saved_tags %}
+                            <p>タグ：{% for tag in saved_tags %}{{ tag.name }}{% if not forloop.last %}、{% endif %}{% endfor %}</p>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                <a class="button button-secondary" href="{% url 'search:search_results' %}?{{ saved_search.search_query }}#saved-searches">検索画面で編集</a>
+            </article>
+        {% empty %}
+            <p class="help-text notification-rule-empty">検索ページから追加した通知条件はありません。</p>
+        {% endfor %}
+    </section>
+
+</section>
+
+{% endblock %}

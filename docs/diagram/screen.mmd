@@ -1,0 +1,53 @@
+%% 画面遷移図: Team-D プロジェクト（EventMatch）
+%% 画面とその間の遷移のみを表す。
+
+flowchart TD
+
+    %% ==== 未ログイン領域 ====
+    Login["ログイン画面"]
+    Signup["アカウント作成画面"]
+
+    %% ==== ログイン必須の参加者向け画面 ====
+    Home["ホーム"]
+    Search["イベント検索"]
+    EventDetail["イベント詳細"]
+    Favorites["お気に入り一覧"]
+    History["閲覧履歴"]
+    Organized["主催イベント一覧"]
+    Notifications["通知一覧"]
+    Profile["アカウント"]
+    Preferences["設定"]
+
+    %% ==== 未ログイン領域の遷移 ====
+    Login <--> Signup
+    Signup --> Profile
+    Login --> Profile
+
+    %% ==== ホーム画面固有の遷移 ====
+    Home --> Search
+    Home --> Favorites
+    Home --> History
+    Home <--> EventDetail
+
+    %% ==== 検索結果画面固有の遷移 ====
+    Search <--> EventDetail
+
+    %% ==== お気に入り一覧画面固有の遷移 ====
+    Favorites --> Search
+    Favorites --> EventDetail
+
+    %% ==== 閲覧履歴画面固有の遷移 ====
+    History --> Search
+    History --> EventDetail
+
+    %% ==== 主催イベント一覧画面固有の遷移 ====
+    Organized --> EventDetail
+
+    %% ==== 通知一覧画面固有の遷移 ====
+    Notifications --> EventDetail
+
+    %% ==== アカウント画面固有の遷移 ====
+    Profile --> Preferences
+
+    %% ==== 設定画面固有の遷移 ====
+    Preferences --> Search

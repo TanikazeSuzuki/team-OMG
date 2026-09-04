@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}イベント検索 | EventMatch{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/participant.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="participant-page page-section">
+  <div class="page-title-row">
+    <div>
+      <p class="eyebrow">SEARCH</p>
+      <h1>イベント検索</h1>
+      <p>複数の条件を組み合わせて、参加したいイベントを絞り込めます。</p>
+    </div>
+  </div>
+
+  <form class="search-panel" method="get">
+    <div class="search-fields">
+      <div class="field-group field-wide">
+        <label for="id_keyword">キーワード</label>
+        <input type="search" id="id_keyword" name="keyword" value="{{ criteria.keyword }}" placeholder="イベント名・説明から検索">
+      </div>
+      <div class="field-group">
+        <label for="id_location">開催地</label>
+        <input type="search" id="id_location" name="location" value="{{ criteria.location }}" placeholder="例：大阪市">
+      </div>
+      <div class="field-group">
+        <label for="id_period_from">開始日</label>
+        <input type="date" id="id_period_from" name="period_from" value="{{ criteria.period_from|date:'Y-m-d' }}">
+      </div>
+      <div class="field-group">
+        <label for="id_period_to">終了日</label>
+        <input type="date" id="id_period_to" name="period_to" value="{{ criteria.period_to|date:'Y-m-d' }}">
+      </div>
+      <div class="field-group">
+        <label for="id_sort">並べ替え</label>
+        <select id="id_sort" name="sort">
+          <option value="start_asc" {% if selected_sort == "start_asc" %}selected{% endif %}>開催日が近い順</option>
+          <option value="start_desc" {% if selected_sort == "start_desc" %}selected{% endif %}>開催日が遠い順</option>
+          <option value="newest" {% if selected_sort == "newest" %}selected{% endif %}>新着順</option>
+        </select>
+      </div>
+    </div>
+
+    <fieldset class="tag-fieldset">
+      <legend>タグ</legend>
+      <p class="help-text">複数選択した場合は、いずれかのタグを含むイベントを検索します。</p>
+      {% if all_tags %}
+        <div class="tag-options">
+          {% for tag in all_tags %}
+            <label class="check-chip">
+              <input type="checkbox" name="tag" value="{{ tag.id }}" {% if tag.id in criteria.tag_ids %}checked{% endif %}>
+              <span>{{ tag.name }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>選択できるタグはまだありません。</p>
+      {% endif %}
+    </fieldset>
+
+    <div class="action-row">
+      <button class="button button-primary" type="submit">この条件で検索</button>
+      <a class="button button-quiet" href="{% url 'search:search_results' %}">条件をクリア</a>
+    </div>
+  </form>
+
+  {% if user.is_authenticated %}
+    <div class="search-save-area">
+      <form class="saved-search-card save-search-inline" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create">
+        <input type="hidden" name="keyword" value="{{ criteria.keyword }}">
+        <input type="hidden" name="location" value="{{ criteria.location }}">
+        <input type="hidden" name="period_from" value="{{ criteria.period_from|date:'Y-m-d' }}">
+        <input type="hidden" name="period_to" value="{{ criteria.period_to|date:'Y-m-d' }}">
+        {% for tag_id in criteria.tag_ids %}
+          <input type="hidden" name="tag" value="{{ tag_id }}">
+        {% endfor %}
+        <div class="save-search-copy">
+          <strong>現在の検索条件を保存</strong>
+          <input type="hidden" name="notify_enabled" value="false">
+          <label class="check-row">
+            <input type="checkbox" name="notify_enabled" value="on" checked>
+            この検索条件を通知設定に追加する
+          </label>
+          <p class="help-text">追加した条件は設定画面でも確認できます。</p>
+        </div>
+        <button class="button button-primary" type="submit">検索条件を保存</button>
+      </form>
+
+      <details class="saved-search-drawer" id="saved-searches" {% if request.GET.show_saved == "1" %}open{% endif %}>
+        <summary>
+          <span>保存済みの検索条件</span>
+          <span class="result-count">{{ saved_searches|length }}件</span>
+        </summary>
+        <div class="saved-search-drawer-content">
+          <div class="saved-search-list">
+            {% for saved_search in saved_searches %}
+              {% with saved_tags=saved_search.tags.all %}
+                <details class="saved-search-card">
+                  <summary>
+                    {{ saved_search.keyword|default:"キーワード指定なし" }}
+                    {% if saved_search.location %}・{{ saved_search.location }}{% endif %}
+                  </summary>
+                  <form class="saved-search-form" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update">
+                    <input type="hidden" name="pk" value="{{ saved_search.pk }}">
+                    <div class="search-fields">
+                      <div class="field-group">
+                        <label for="saved-keyword-{{ saved_search.pk }}">キーワード</label>
+                        <input id="saved-keyword-{{ saved_search.pk }}" type="text" name="keyword" value="{{ saved_search.keyword }}">
+                      </div>
+                      <div class="field-group">
+                        <label for="saved-location-{{ saved_search.pk }}">開催地</label>
+                        <input id="saved-location-{{ saved_search.pk }}" type="text" name="location" value="{{ saved_search.location }}">
+                      </div>
+                      <div class="field-group">
+                        <label for="saved-from-{{ saved_search.pk }}">開始日</label>
+                        <input id="saved-from-{{ saved_search.pk }}" type="date" name="period_from" value="{{ saved_search.period_from|date:'Y-m-d' }}">
+                      </div>
+                      <div class="field-group">
+                        <label for="saved-to-{{ saved_search.pk }}">終了日</label>
+                        <input id="saved-to-{{ saved_search.pk }}" type="date" name="period_to" value="{{ saved_search.period_to|date:'Y-m-d' }}">
+                      </div>
+                    </div>
+                    <fieldset class="tag-fieldset">
+                      <legend>タグ</legend>
+                      <div class="tag-options">
+                        {% for tag in all_tags %}
+                          <label class="check-chip">
+                            <input type="checkbox" name="tag" value="{{ tag.id }}" {% if tag in saved_tags %}checked{% endif %}>
+                            <span>{{ tag.name }}</span>
+                          </label>
+                        {% endfor %}
+                      </div>
+                    </fieldset>
+                    <input type="hidden" name="notify_enabled" value="false">
+                    <label class="check-row">
+                      <input type="checkbox" name="notify_enabled" value="on" {% if saved_search.notify_enabled %}checked{% endif %}>
+                      この検索条件を通知設定に含める
+                    </label>
+                    <p class="help-text">有効な条件は設定画面にも表示され、一致する新着イベントの通知に使われます。</p>
+                    <div class="saved-search-actions">
+                      <a class="button button-secondary" href="{% url 'search:search_results' %}{% if saved_search.search_query %}?{{ saved_search.search_query }}{% endif %}">
+                        この条件で検索
+                      </a>
+                      <button class="button button-primary" type="submit">変更を保存</button>
+                    </div>
+                  </form>
+                  <form class="delete-form" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="pk" value="{{ saved_search.pk }}">
+                    <button class="button button-danger" type="submit">保存条件を削除</button>
+                  </form>
+                </details>
+              {% endwith %}
+            {% empty %}
+              <div class="empty-state compact"><p>保存済みの検索条件はありません。</p></div>
+            {% endfor %}
+          </div>
+        </div>
+      </details>
+    </div>
+  {% else %}
+    <p class="notice-card"><a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">ログイン</a>すると検索条件を保存できます。</p>
+  {% endif %}
+</section>
+
+<section class="participant-page page-section" aria-labelledby="results-heading">
+  <div class="section-heading">
+    <h2 id="results-heading">検索結果</h2>
+    <span class="result-count">{{ events|length }}件</span>
+  </div>
+
+  {% if events %}
+    <div class="event-grid">
+      {% for event in events %}
+        {% include "events/_event_card.html" with event=event %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h3>条件に合うイベントがありません</h3>
+      <p>キーワードを短くする、期間やタグを変更するなど条件を見直してみてください。</p>
+    </div>
+  {% endif %}
+</section>
+
+{% endblock %}
