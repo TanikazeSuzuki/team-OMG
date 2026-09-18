@@ -1,0 +1,19 @@
+:root { color-scheme: light; font-family: system-ui, "Yu Gothic", sans-serif; color: #23302b; background: #f5f6f2; }
+* { box-sizing: border-box; }
+body { margin: 0; line-height: 1.8; }
+a { color: #27613e; }
+.site-header { background: white; border-bottom: 1px solid #dae0d8; padding: 1rem 5%; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
+.site-header > a { text-decoration: none; font-weight: 700; }
+nav { display: flex; align-items: center; gap: 1rem; }
+main { max-width: 900px; margin: 3rem auto; padding: 0 1.25rem; }
+h1, h2 { line-height: 1.4; }
+.eyebrow { color: #526b53; font-size: .8rem; letter-spacing: .15em; }
+.card { background: white; border: 1px solid #dae0d8; border-radius: 12px; padding: clamp(1.25rem, 4vw, 2.25rem); margin-top: 2rem; }
+.login { max-width: 500px; margin-inline: auto; }
+dt { font-weight: bold; }
+dd { margin: 0 0 1rem; }
+input:not([type=hidden]) { display: block; width: 100%; padding: .7rem; border: 1px solid #85948a; border-radius: 5px; font: inherit; }
+button, .button { display: inline-block; padding: .65rem 1rem; border: 0; border-radius: 6px; background: #27613e; color: white; font: inherit; cursor: pointer; text-decoration: none; }
+.button { margin-right: 1rem; }
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid #ca8525; outline-offset: 3px; }
+.errorlist { color: #a12121; }

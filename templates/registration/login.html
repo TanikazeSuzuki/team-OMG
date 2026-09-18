@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}ログイン | グルメ店決めアプリ{% endblock %}
+{% block content %}
+  <section class="card login">
+    <h1>ログイン</h1>
+    <p>開発用に作成したユーザーでログインしてください。</p>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit">ログイン</button>
+    </form>
+  </section>
+{% endblock %}

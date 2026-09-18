@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}開発用トップ | グルメ店決めアプリ{% endblock %}
+{% block content %}
+  <p class="eyebrow">DEVELOPMENT</p>
+  <h1>グルメ店決めアプリ</h1>
+  <p>みんなの希望から、お店を決める。</p>
+  <section class="card">
+    <h2>開発用の土台</h2>
+    <p>このページはDjango・Template・CSSの接続を確認するための画面です。グループ作成、店舗評価、投票などはこれから実装します。</p>
+    <p>まずはダミー店舗で、条件入力から最終結果まで動くMVPを作ります。外部店舗APIはその後に追加します。</p>
+    <dl>
+      <dt>佐々木</dt><dd>グループ・参加・希望条件・投票・最終結果</dd>
+      <dt>村瀬</dt><dd>店舗・評価・候補絞り込み・再検索</dd>
+    </dl>
+    <a class="button" href="{% url 'login' %}">ログイン画面</a>
+    <a href="{% url 'admin:index' %}">管理画面</a>
+  </section>
+{% endblock %}

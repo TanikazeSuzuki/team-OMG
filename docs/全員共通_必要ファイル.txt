@@ -1,0 +1,241 @@
+﻿全員共通｜Django グルメ店決めアプリ 必要ファイルと分担
+作成日：2026年9月18日
+配置先：各自がリポジトリをcloneしたフォルダ（例：team-OMGapp）
+
+現在の状態：初期ファイルを用意した段階です。Python・Djangoの実インストールと
+サーバー起動は未検証です。READMEのclone・setup.cmd手順で各自の環境を準備します。
+セットアップ対象：Python 3.13.15、Django 5.2.17。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. この資料の目的と前提
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+必要ファイル・担当・Gitでの共有範囲をそろえる資料です。
+個別の機能仕様は「佐々木.txt」「村瀬.txt」を参照します。
+
+構成はDjango、SQLite、Django標準User、Django Templateによる画面を基本にします。
+appはgroups、restaurants、votingの3つです。外部店舗APIは後回しにし、
+ダミー店舗で条件入力 → 評価 → 再検索 → 最終投票 → 結果まで動かすMVPを目指します。
+
+担当：
+・佐々木：groups、voting、ログインの入口、グループの進行状態。
+・村瀬：restaurants、店舗データ、評価、候補絞り込み、再検索。
+・共通設定・URL・画面の土台：最初の準備をまとめて行い、変更は2人で共有。
+
+環境構築と機能完成は別です。以下は今回の土台と、後で実装する機能を区別した構成案です。
+
+区分：
+【初期】Djangoの標準的な初期構成に沿って用意する。必要な内容を後から追記する。
+【今回】今回の構築用一式に用意した設定・共有資料・最小画面。
+【機能】担当機能を作る際に追加・実装する。現時点では実装済みとしない。
+【各自】各自のPCで作る。Gitで共有しない。
+【後回し】MVPでは不要。必要になった時点で追加する。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. 全体のフォルダ構成
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+team-OMGapp/
+├─ README.md                    【今回】準備・起動・データ投入・確認方法
+├─ setup.cmd                    【今回】Python・依存導入、migrate、check
+├─ start.cmd                    【今回】開発サーバー起動
+├─ docs/                        【今回】共通資料、佐々木.txt、村瀬.txt
+├─ requirements.txt             【今回】同じ環境を再現する依存パッケージ一覧
+├─ .gitignore                   【今回】Gitに含めないファイルの指定
+├─ manage.py                    【初期】Djangoの管理コマンド入口
+├─ config/
+│  ├─ __init__.py               【初期】Pythonパッケージとしての印
+│  ├─ settings.py               【初期→今回編集】全体設定
+│  ├─ urls.py                   【初期→今回編集】全体のURL振り分け
+│  ├─ asgi.py                   【初期】サーバー起動用の入口
+│  └─ wsgi.py                   【初期】サーバー起動用の入口
+├─ groups/                      佐々木：グループ・参加・希望条件
+├─ restaurants/                 村瀬：店舗・評価・候補・再検索
+├─ voting/                      佐々木：投票・結果
+├─ templates/
+│  ├─ home.html                 【今回】開発用トップ・接続確認画面
+│  ├─ base.html                 【今回】全画面の共通レイアウト
+│  ├─ registration/
+│  │  └─ login.html             【今回】標準認証のログイン画面
+│  ├─ groups/                   【機能】グループ・条件入力の画面
+│  ├─ restaurants/              【機能】候補・評価・再検索の画面
+│  └─ voting/                   【機能】最終投票・結果の画面
+├─ static/
+│  └─ css/common.css            【今回】共通の見た目
+├─ .tools/                      【各自】プロジェクト内のPython本体
+├─ .venv/                       【各自】Pythonの仮想環境
+└─ db.sqlite3                   【各自】そのPCの開発用データベース
+
+最小画面はconfig/urls.pyのTemplateView、templates/home.html、URL「/」です。
+ファイルは用意済みですが、PythonとDjangoによる実行確認はまだです。
+templatesとstaticはルート直下にまとめ、各app内にも重複作成しません。
+空のフォルダだけではGitで共有されないため、必要なファイルと一緒に追加します。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. 全員が使う共通ファイル
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ README.md【今回／共有する】
+担当：初期準備の担当者が作り、各担当が自分の変更内容を追記。
+記載する内容：
+・採用したPythonとDjangoのバージョン。
+・リポジトリ取得、仮想環境作成、依存パッケージ導入の手順。
+・migrate、起動、ログイン・管理ユーザー作成の手順。
+・ダミー店舗を用意する方法と、実装済みになった後の投入手順。
+・一連の動作を確認する手順と担当範囲。
+
+■ requirements.txt【今回／共有する】
+依存パッケージを入れるための一覧です。今回はDjango==5.2.17を固定しています。
+間接依存はセットアップ時に解決され、.setup-installed.txtに記録されます。
+成功環境を確認した後、全員の間接依存まで固定する一覧として整えます。
+Python本体はrequirements.txtでは導入できません。setup.cmdが.toolsへ準備します。
+パッケージを追加・更新した人が一覧も更新し、他の人は取得後に反映します。
+当面はDjangoを中心とした最小構成にします。
+
+■ .gitignore【今回／共有する】
+.venv/、db.sqlite3、__pycache__/、*.pycなどを除外します。
+SQLiteの一時ファイルや個人のエディタ設定も必要に応じて除外します。
+migrations/やダミー店舗のfixtureは除外しません。
+既にGit管理済みのファイルは、後からここへ書くだけでは管理対象から外れません。
+
+■ config/settings.py【初期→今回編集／共有する】
+3 appsの登録、SQLite、画面・CSSの配置、言語・時刻、ログイン先などを設定します。
+共通ファイルなので、変更する前に内容を相手へ共有します。
+標準Userを使う場合、独自のaccounts appやUserモデルを作る必要はありません。
+秘密情報や各自専用の設定を、共有コードへ直接追加しないようにします。
+
+■ config/urls.py【初期→今回編集／共有する】
+管理画面、認証、最小起動確認画面、各appのURLを接続します。
+機能追加時は各app/urls.pyへ具体的なURLを書き、ここではincludeで振り分ける案です。
+
+■ base.html・login.html・common.css【今回／共有する】
+base.htmlは共通の見出し・ナビゲーション・メッセージ表示などの土台です。
+各画面はこれを継承します。
+login.htmlは佐々木が担当する認証の入口です。新規登録やパスワード再設定まで
+最初から作る必要はなく、MVPでは各自が用意したテストユーザーで確認できます。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. 各appに必要なファイル
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+groups、restaurants、votingは、基本的に同じファイル構成にします。
+
+__init__.py【初期／共有】
+  Pythonのパッケージとして扱うためのファイル。通常は空のままで構いません。
+apps.py【初期／共有】
+  appの設定。最初は生成された内容を使います。
+models.py【初期→機能実装／共有】
+  DBに保存する情報と関連を定義します。Modelごとに別ファイルを作る必要はありません。
+admin.py【初期→機能実装／共有】
+  作成したModelを管理画面から確認・編集できるよう登録します。
+views.py【初期→機能実装／共有】
+  リクエストを受け、表示する画面や保存後の遷移を決めます。
+tests.py【初期→機能実装／共有】
+  所属確認、重複提出、集計、ラウンド分離などの確認を追加します。
+  初期生成された空ファイルがあるだけでは、テストが用意できたことにはなりません。
+migrations/__init__.py【初期／共有】
+  migrationsをパッケージとして扱うためのファイルです。
+migrations/0001_initial.py以降【Model変更後に自動生成／共有】
+  DB構造の変更履歴です。makemigrationsで作り、Model変更と一緒に共有します。
+urls.py【今回→機能追加／共有】
+  app内のURLとViewを結びます。startappでは自動生成されません。
+  今回は3 appsに空のurlpatternsを用意し、config/urls.pyへ接続しています。
+forms.py【機能／共有】
+  入力項目とチェックをまとめます。startappでは自動生成されません。
+services.py【機能・整理方法の案／共有】
+  複数のViewから使う処理をまとめます。Django必須のファイルではありません。
+
+具体的な担当内容：
+・groups/models.py：Group、GroupMember、UserPreference。
+・groups/forms.py：グループ作成、参加、希望条件の入力。
+・groups/services.py：所属確認や進行状態更新の共通窓口。
+・restaurants/models.py：Restaurant、Evaluation、EvaluationReason、候補管理。
+・restaurants/forms.py：評価・理由の入力、再検索条件の確認。
+・restaurants/services.py：条件集約、検索、集計、再検索、最終候補取得。
+・voting/models.py：Vote、結果保存のためのModel案。
+・voting/forms.py：投票、同票時の確定操作。
+・voting/services.py：投票受付、集計、結果確定。
+
+補助Modelは既存担当資料の案に合わせ、RestaurantやUserは担当ごとに複製しません。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. 機能開発で追加する画面とダミーデータ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+画面のファイル名は既存担当資料に合わせる案です。すべてGitで共有します。
+
+佐々木：
+・templates/groups/create.html：グループ作成。
+・templates/groups/join.html：参加。
+・templates/groups/detail.html：参加者、条件入力状況、進行段階。
+・templates/groups/preference_form.html：本人の希望条件。
+・templates/voting/final_candidates.html：固定した最終候補と投票。
+・templates/voting/result.html：未投票・同票・確定結果の表示。
+
+村瀬：
+・templates/restaurants/candidate_list.html：現在の候補と評価状況。
+・templates/restaurants/evaluation_form.html：評価と理由。
+・templates/restaurants/evaluation_summary.html：集計・未評価・順位。
+・templates/restaurants/refine.html：再検索条件の確認。
+
+POST処理だけを行うViewには、専用HTMLを必ず作る必要はありません。
+保存後は一覧などへ戻す構成にできます。
+
+ダミー店舗【機能／村瀬／共有する】
+最小案：restaurants/fixtures/restaurants_demo.json。
+Restaurantの項目が決まった後に、再現可能な店舗データを用意します。
+データ投入用のファイル案です。Modelやデータは今後実装します。
+別案としてmanagement/commands/に投入コマンドを作れますが、両方は必須ではありません。
+採用する方法を1つに決め、実際に動く投入手順をREADMEへ記載します。
+db.sqlite3を送り合って環境をそろえません。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. ファイルを置いた後に必要な接続
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ファイルが存在するだけでは画面や機能は動きません。次の接続を確認します。
+
+・groups、restaurants、votingをsettings.pyのINSTALLED_APPSへ登録。
+・ルートtemplatesをTEMPLATESのDIRSへ設定。
+・ルートstaticをSTATICFILES_DIRSへ設定し、STATIC_URLも確認。
+・base.htmlからstaticの仕組みでcommon.cssを読み込む。
+・各app/urls.pyをconfig/urls.pyからincludeする。
+・ログイン用のURLとlogin.htmlを接続し、ログイン後の移動先を設定。
+・Viewから正しいTemplate名を指定し、フォームの保存先URLもそろえる。
+・Model変更後はmakemigrationsで変更ファイルを生成し、migrateで各自のDBへ反映。
+
+Model変更を受け取る側は、共有されたmigrationを取得してmigrateします。
+同じmigrationを各自で作り直したり、競合回避のために削除したりしません。
+appをまたぐ参照もあるので、Modelとmigrationを一緒に共有してください。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. 各自PCだけのもの・後回しにするもの
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【各自PCだけ／Git共有しない】
+・.tools：Python本体。venvが参照するため、セットアップ後も削除しません。
+・.setup-installed.txt：そのPCに導入されたパッケージの記録。
+・.venv：各自が作るPython環境。フォルダを相手へコピーしません。
+・db.sqlite3：各自のテストユーザー、グループ、評価、投票などを保存。
+・__pycache__、*.pyc：Pythonが作る一時的なファイル。
+・.envを採用した場合の実値：秘密情報など。今の構成で導入必須ではありません。
+  .envを置くだけでDjangoが自動的に読み込むわけではありません。
+
+【後回し】
+外部店舗API接続、APIキー設定、地図・経路計算、高度な推薦処理、画像アップロード、
+独立したREST API、React等のフロントエンド、Docker、本番公開用の構成。
+asgi.pyとwsgi.pyは初期生成されたものを残し、今は特別な編集を要しません。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. 作成する順番と共通の確認項目
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. 作業フォルダとGit、Python、.venv、requirements.txtを準備する。
+2. Djangoプロジェクトと3 appsを作り、共通設定・URLを接続する。
+3. base.html、ログイン画面、CSS、最小起動確認画面、READMEを用意する。
+4. 各担当がModelを実装し、migrationとadmin登録を追加する。
+5. 村瀬がダミー店舗を用意。各担当がForm・View・URL・Templateをつなぐ。
+6. 条件入力から投票・結果までの通し動作を確認する。
+7. 評価理由による簡単な再検索を加え、境界の動作を確認する。
+
+□ 新しいPCでもREADMEの手順で準備・起動できる。
+□ Python・依存パッケージのバージョンがそろっている。
+□ migrationsは共有し、.venvとdb.sqlite3は共有していない。
+□ 共通設定・URL・base.htmlの変更が相手に伝わっている。
+□ 最終候補は同じRestaurant IDと保存済み候補集合で受け渡している。
+□ 初回0件、再検索0件、未評価、未投票、同票、二重送信、別グループの操作を確認する。
+□ 生成された空ファイルと、実装済みの機能を区別して共有している。
+
+共通の土台をそろえ、機能が動く単位で実装・確認を進めます。

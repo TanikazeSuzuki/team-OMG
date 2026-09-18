@@ -1,0 +1,2 @@
+# Django version for this development scaffold.
+Django==5.2.17

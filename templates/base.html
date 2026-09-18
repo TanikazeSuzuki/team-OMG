@@ -1,0 +1,27 @@
+{% load static %}
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}グルメ店決めアプリ{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/common.css' %}">
+</head>
+<body>
+  <header class="site-header">
+    <a href="{% url 'home' %}">team-OMG · グルメ店決めアプリ</a>
+    <nav aria-label="メインメニュー">
+      {% if user.is_authenticated %}
+        <span>{{ user.get_username }}</span>
+        <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">ログアウト</button></form>
+      {% else %}
+        <a href="{% url 'login' %}">ログイン</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main>
+    {% if messages %}<ul class="messages">{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
